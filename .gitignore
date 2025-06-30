@@ -91,7 +91,7 @@ docs/_build/
 .env.override
 
 # Django static files (if you collect static files)
-static/
+# static/
 
 # Ignore migrations from 3rd party apps if needed
 # <app_name>/migrations/
