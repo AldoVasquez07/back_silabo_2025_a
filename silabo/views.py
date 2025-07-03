@@ -431,38 +431,35 @@ class ContenidoEspecificoViewSet(viewsets.ModelViewSet):
 
 class UnidadViewSet(viewsets.ModelViewSet):
     """
-    CRUD completo para unidades
+    CRUD completo para unidades.
+    - Si llamas a /api/unidades/?silabo_id=5 devuelve solo las del sílabo 5.
     """
-    queryset = Unidad.objects.all()
     serializer_class = UnidadSerializer
+    queryset = Unidad.objects.all().order_by('numero')   # orden base
 
-    # @action(detail=True, methods=['get'])
-    # def semanas(self, request, pk=None):
-    #     """
-    #     Obtener semanas de una unidad
-    #     """
-    #     unidad = self.get_object()
-    #     semanas = unidad.semanas.filter(activo=True).order_by('numero')
-    #     serializer = SemanaSerializer(semanas, many=True)
-    #     return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
-    def por_silabo(self, request):
-        """
-        Obtener unidades filtradas por ID de sílabo
-        """
-        silabo_id = request.query_params.get('silabo_id')
-        if not silabo_id:
-            return Response({'error': 'silabo_id es requerido'}, status=400)
+    # ←–– Filtrado global por query param ––→
+    def get_queryset(self):
+        qs = super().get_queryset().filter(activo=True)  # sólo activas
+        silabo_id = self.request.query_params.get('silabo_id')
+        if silabo_id:
+            qs = qs.filter(silabo_id=silabo_id)
+        return qs
 
-        unidades = Unidad.objects.filter(silabo_id=silabo_id, activo=True).order_by('numero')
-        serializer = self.get_serializer(unidades, many=True)
+    # ←–– Acciones de detalle ––→
+    @action(detail=True, methods=['get'])
+    def semanas(self, request, pk=None):
+        """
+        Obtener semanas activas de una unidad, ordenadas por número.
+        """
+        unidad = self.get_object()
+        semanas = unidad.semanas.filter(activo=True).order_by('numero')
+        serializer = SemanaSerializer(semanas, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def bibliografias(self, request, pk=None):
         """
-        Obtener bibliografías de una unidad
+        Obtener bibliografías activas de una unidad.
         """
         unidad = self.get_object()
         bibliografias = unidad.bibliografias.filter(activo=True)
