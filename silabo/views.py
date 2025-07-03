@@ -432,7 +432,6 @@ class ContenidoEspecificoViewSet(viewsets.ModelViewSet):
 class UnidadViewSet(viewsets.ModelViewSet):
     """
     CRUD completo para unidades.
-    - Si llamas a /api/unidades/?silabo_id=5 devuelve solo las del sílabo 5.
     """
     serializer_class = UnidadSerializer
     queryset = Unidad.objects.all().order_by('numero')   # orden base
