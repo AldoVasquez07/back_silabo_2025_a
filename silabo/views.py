@@ -436,14 +436,27 @@ class UnidadViewSet(viewsets.ModelViewSet):
     queryset = Unidad.objects.all()
     serializer_class = UnidadSerializer
 
-    @action(detail=True, methods=['get'])
-    def semanas(self, request, pk=None):
+    # @action(detail=True, methods=['get'])
+    # def semanas(self, request, pk=None):
+    #     """
+    #     Obtener semanas de una unidad
+    #     """
+    #     unidad = self.get_object()
+    #     semanas = unidad.semanas.filter(activo=True).order_by('numero')
+    #     serializer = SemanaSerializer(semanas, many=True)
+    #     return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def por_silabo(self, request):
         """
-        Obtener semanas de una unidad
+        Obtener unidades filtradas por ID de sílabo
         """
-        unidad = self.get_object()
-        semanas = unidad.semanas.filter(activo=True).order_by('numero')
-        serializer = SemanaSerializer(semanas, many=True)
+        silabo_id = request.query_params.get('silabo_id')
+        if not silabo_id:
+            return Response({'error': 'silabo_id es requerido'}, status=400)
+
+        unidades = Unidad.objects.filter(silabo_id=silabo_id, activo=True).order_by('numero')
+        serializer = self.get_serializer(unidades, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
