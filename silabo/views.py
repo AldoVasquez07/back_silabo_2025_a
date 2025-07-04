@@ -470,12 +470,20 @@ class ActividadViewSet(viewsets.ModelViewSet):
     """
     CRUD completo para actividades
     """
-    queryset = Actividad.objects.all()
     serializer_class = ActividadSerializer
-    
+    queryset = Actividad.objects.all().order_by('id')   # orden opcional
+
+    # ←–– Búsqueda por silabo_id ––→
+    def get_queryset(self):
+        qs = super().get_queryset().filter(activo=True)     # sólo actividades activas
+        silabo_id = self.request.query_params.get('silabo_id')
+        if silabo_id:
+            qs = qs.filter(silabo_id=silabo_id)
+        return qs
+
     def create(self, request, *args, **kwargs):
         """
-        Crear actividad(es) - soporta creación múltiple
+        Crear actividad(es) – soporta creación múltiple
         """
         is_many = isinstance(request.data, list)
         serializer = self.get_serializer(data=request.data, many=is_many)
