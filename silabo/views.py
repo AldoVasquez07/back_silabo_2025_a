@@ -489,12 +489,20 @@ class CriterioEvaluacionViewSet(viewsets.ModelViewSet):
     """
     CRUD completo para criterios de evaluación
     """
-    queryset = CriterioEvaluacion.objects.all()
     serializer_class = CriterioEvaluacionSerializer
+    queryset = CriterioEvaluacion.objects.all().order_by('id')   # orden opcional
+
+    # ←–– Filtro por silabo_id ––→
+    def get_queryset(self):
+        qs = super().get_queryset().filter(activo=True)          # solo activos
+        silabo_id = self.request.query_params.get('silabo_id')
+        if silabo_id:
+            qs = qs.filter(silabo_id=silabo_id)
+        return qs
 
     def create(self, request, *args, **kwargs):
         """
-        Crear criterio(s) de evaluación - soporta creación múltiple
+        Crear criterio(s) de evaluación – soporta creación múltiple
         """
         is_many = isinstance(request.data, list)
         serializer = self.get_serializer(data=request.data, many=is_many)
